@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="538.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+   <center>
+      <TabPane prefHeight="460.0" prefWidth="690.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+         <tabs>
+            <Tab text="MyProject">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <BorderPane prefHeight="439.0" prefWidth="800.0">
+                           <center>
+                              <AnchorPane fx:id="apTree" prefHeight="475.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <TreeView fx:id="tvDir" layoutX="53.0" layoutY="46.0" onContextMenuRequested="#selectItem" onMouseClicked="#selectItem" prefHeight="142.0" prefWidth="418.0" />
+                                    <Label layoutX="6.0" layoutY="13.0" text="Project:">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <Label layoutX="24.0" layoutY="194.0" text="Tổng quan" />
+                                    <Label fx:id="lblProjectName" layoutX="73.0" layoutY="11.0" text="Package_Manager_prject">
+                                       <font>
+                                          <Font size="20.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </center>
+                           <left>
+                              <AnchorPane prefHeight="439.0" prefWidth="294.0" style="-fx-background-color: #ddd;" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <TextField fx:id="txtSearch" layoutX="14.0" layoutY="236.0" prefHeight="26.0" prefWidth="217.0" />
+                                    <Button fx:id="btnSearch" layoutX="232.0" layoutY="236.0" mnemonicParsing="false" onAction="#searchProject" prefHeight="26.0" prefWidth="52.0" text="Search" />
+                                    <Button fx:id="btnNewProject" layoutX="14.0" layoutY="25.0" mnemonicParsing="false" onAction="#toSceneCreateProject" text="New Project" />
+                                    <Line endX="124.4000244140625" layoutX="129.0" layoutY="64.0" startX="-114.0" />
+                                    <VBox fx:id="vboxRecent" layoutX="21.0" layoutY="98.0" prefHeight="114.0" prefWidth="251.0" />
+                                    <Label layoutX="14.0" layoutY="72.0" text="Recent:">
+                                       <font>
+                                          <Font size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <Line endX="124.4000244140625" layoutX="129.0" layoutY="219.0" startX="-114.0" />
+                                    <VBox fx:id="vboxSearch" layoutX="16.0" layoutY="271.0" prefHeight="149.0" prefWidth="266.0" />
+                                    <Button fx:id="btnReload" layoutX="207.0" layoutY="72.0" mnemonicParsing="false" onAction="#reloadRecentProject" text="reload" />
+                                 </children>
+                              </AnchorPane>
+                           </left>
+                        </BorderPane>
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Package">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="383.0" prefWidth="671.0">
+                     <children>
+                        <BorderPane layoutY="-2.0" prefHeight="386.0" prefWidth="690.0">
+                           <top>
+                              <AnchorPane prefHeight="42.0" prefWidth="697.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <HBox alignment="CENTER" layoutX="-3.0" layoutY="2.0" prefHeight="50.0" prefWidth="690.0">
+                                       <children>
+                                          <Label prefHeight="20.0" prefWidth="130.0" text="Tìm kiếm Package:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField prefHeight="30.0" prefWidth="226.0" promptText="Search package..." />
+                                          <Button fx:id="btnSearch" mnemonicParsing="false" onAction="#seachAction" prefHeight="30.0" prefWidth="50.0">
+                                             <graphic>
+                                                <FontAwesomeIconView glyphName="SEARCH" size="20" wrappingWidth="20.7999267578125" />
+                                             </graphic>
+                                          </Button>
+                                          <Label alignment="CENTER" prefHeight="20.0" prefWidth="73.0" text="Type:" textAlignment="CENTER">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox fx:id="cbFiller" prefHeight="26.0" prefWidth="115.0" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                           </top>
+                           <center>
+                              <TableView prefHeight="308.0" prefWidth="571.0" BorderPane.alignment="CENTER">
+                                <columns>
+                                  <TableColumn prefWidth="74.39997100830078" text="Type" />
+                                    <TableColumn prefWidth="241.5999755859375" text="Name" />
+                                  <TableColumn prefWidth="147.19998168945312" text="version" />
+                                    <TableColumn prefWidth="148.80001831054688" text="Storage Location" />
+                                </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </center>
+                           <left>
+                              <AnchorPane prefHeight="308.0" prefWidth="60.0" BorderPane.alignment="CENTER" />
+                           </left>
+                           <right>
+                              <AnchorPane prefHeight="308.0" prefWidth="30.0" BorderPane.alignment="CENTER" />
+                           </right>
+                        </BorderPane>
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+   <top>
+      <AnchorPane prefHeight="45.0" prefWidth="690.0" style="-fx-background-color: #3498DB;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" layoutY="1.0" prefHeight="46.0" prefWidth="327.0">
+               <children>
+                  <ImageView fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/thor_avatar.png" />
+                     </image>
+                  </ImageView>
+                  <Label prefHeight="28.0" prefWidth="190.0" text="Package Manger">
+                     <font>
+                        <Font name="Berlin Sans FB Bold" size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </children></AnchorPane>
+   </top>
+   <bottom>
+      <AnchorPane prefHeight="25.0" prefWidth="690.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="646.0" layoutY="3.0" prefHeight="18.0" prefWidth="147.0" text="\@Le Tan Dat - 20215339" />
+         </children>
+      </AnchorPane>
+   </bottom>
+</BorderPane>

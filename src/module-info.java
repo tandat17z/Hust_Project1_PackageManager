@@ -2,6 +2,12 @@ module Hust_Project1_PackageManager {
 	requires javafx.controls;
 	requires javafx.fxml;
 	requires javafx.graphics;
+	requires java.sql;
+	requires org.apache.httpcomponents.httpclient;
+	requires java.net.http;
+	requires org.apache.httpcomponents.httpcore;
+	requires java.xml;
 	
-	opens application to javafx.graphics, javafx.fxml;
+	opens view to javafx.graphics, javafx.fxml;
+	opens controller to javafx.graphics, javafx.fxml;
 }

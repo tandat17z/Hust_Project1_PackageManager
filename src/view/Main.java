@@ -1,4 +1,4 @@
-package application;
+package view;
 	
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -11,9 +11,10 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
+			Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
 			Scene scene = new Scene(root);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+//			scene.getStylesheets().add(getClass().getResource("css.application.css").toExternalForm());
+			primaryStage.setTitle("Hust_Project1");
 			primaryStage.setScene(scene);
 			primaryStage.show();
 		} catch(Exception e) {
