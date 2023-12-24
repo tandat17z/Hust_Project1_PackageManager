@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -13,75 +12,104 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import database.MavenProjectRoot;
+import database.Database;
+import database.ProjectRoot;
 
-public class Library extends MavenProjectRoot {
+public class Library {
 	String pomPath = "D:\\Hust_project1_PackageManager\\Library\\";
-	String pomUrl = "https://repo1.maven.org/maven2/";
+	String repoMaven = "https://repo1.maven.org/maven2/"; // để truy cập repo chứa Pom của maven
 	
-	String groupId;
-	String artifactId;
+	String type;
+	String name;
 	String version;
+	String description;
+	String edit;
 	
 //	public static void main(String[] args) {
-//		Library library = new Library("org.openjfx", "javafx-controls", "21.0.1");
+//		Library library = new Library(
+//				"maven", 
+//				"org.openjfx:javafx-controls", 
+//				"21.0.1",
+//				"javafx",
+//				"no");
+//		System.out.println(library.pomPath);
 //		library.save();
 //	}
 	
-	public void save() {
-		// TODO Auto-generated method stub
-		File file = new File(pomPath);
-        File parentDir = file.getParentFile();
-        if ( parentDir.exists() ) {
-        	System.out.println( toString() + " existed");
-        	return;
-        }
-		saveDb();
-		saveLocal();
-	}
-
 	@Override
 	public String toString() {
-		return groupId.replace('.', '/') + "/"
-               + artifactId + "/" + version + "/" + artifactId + "-" + version;
-	}
-
-	public Library(String groupId, String artifactId, String version) {
-		this.groupId = groupId;
-		this.artifactId = artifactId;
-		this.version = version;
-		
-		this.pomPath += groupId.replace('.', '\\') + "\\" + artifactId + "\\" + version;
-		this.pomUrl += toString() + ".pom";
+		if( type == "maven") { 
+			String[] str = name.split(":"); // groupId:artifactId
+			return str[0].replace('.', '\\') + "\\"
+					+ str[1] + "\\" + version + "\\" ;
+		}
+		return " ";
 	}
 	
-	public void saveDb() {
-        // Sửa thành kiểm tra dữ liệu trong database
-        
-		String sql = "INSERT INTO LIBRARY(groupid, artifactid, version) "
-				+ "VALUES (?, ?, ?);";
-		String[] arg = {groupId, artifactId, version};
+	public Library(String type, String name, String version, String description, String edit) {
+		this.type = type;
+		this.name = name;
+		this.version = version;
+		this.description = description;
+		this.edit = edit;
+		
+		String[] str = name.split(":");
+		if( str.length >= 2) {
+			this.pomPath += type + "\\" + toString();
+			this.repoMaven += toString().replace("\\", "/") + str[1] + "-" + version+ ".pom";
+		}
+		
+	}
+	
+	public void save() {
+		saveLocal();
+		saveDb();
+		System.out.println("Successful - Library.save: " + toString());
+	}
+
+	private void saveDb() {
+		String sqlChk = "SELECT * FROM LIBRARY "
+				+ "WHERE type = ? and name = ? and version = ?";
+		String[] argChk = {type, name, version};
+		
 		try {
-			sqlModify(sql, arg);
-			System.out.println("Lưu thành công Library trong db");
+			Boolean check = Database.getInstance().sqlQuery(sqlChk, argChk);
+			if( check ) {
+				System.out.println("--" + toString() + "existed in Db");
+				return;
+			}
+			
+			String sql = "INSERT INTO LIBRARY(type, name, version, description, edit) "
+					+ "VALUES (?, ?, ?, ?, ?);";
+			String[] arg = {type, name, version, description, edit};
+			Database.getInstance().sqlModify(sql, arg);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Lưu Library trong db FAIL --------");
+			System.out.println("Error: Library.saveDb");
 			e.printStackTrace();
 		}
 	}
 	
-	public void saveLocal() {
-        downloadPom();
-        dependencyTree(pomPath);
+	private void saveLocal() {
+		File dir = new File(pomPath);
+		if( dir.exists() ) {
+        	System.out.println( "--" + toString() + " existed trong Local");
+        	return;
+		}
+		
+		dir.mkdirs();
+		try {
+	        downloadPom();
+	        ProjectRoot.getInstance(type).saveDependencyTree(pomPath);
+		}
+		catch(Exception e) {
+			System.out.println("Error: Library don't get pom");
+		}
 	}
 	
 	private void downloadPom() {
-		File folder = new File(pomPath);
-		folder.mkdirs();
-		
-        HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(pomUrl);
+		HttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(repoMaven);
 
 		try {
 			HttpResponse response;
@@ -89,7 +117,11 @@ public class Library extends MavenProjectRoot {
 			HttpEntity entity = response.getEntity();
 			if (entity != null) {
 				String pomContent =  EntityUtils.toString(entity);
-				saveToFile(pomPath + "\\pom.xml", pomContent);
+				
+				File file = new File(pomPath + "pom.xml");
+	            FileWriter writer = new FileWriter(file);
+	            writer.write(pomContent);
+	            writer.close();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -97,18 +129,46 @@ public class Library extends MavenProjectRoot {
 		}
 
     }
-	
-	private void saveToFile(String path, String pomContent){
-        File file = new File(path);
 
-        try {
-            // Tạo và ghi vào file
-            FileWriter writer = new FileWriter(file);
-            writer.write(pomContent);
-            writer.close();
-            System.out.println("Download successful " + toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+	public String getType() {
+		return type;
 	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getEdit() {
+		return edit;
+	}
+
+	public void setEdit(String edit) {
+		this.edit = edit;
+	}
+
+	
 }

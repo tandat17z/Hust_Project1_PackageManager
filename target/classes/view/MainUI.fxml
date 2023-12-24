@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="620.0" prefWidth="794.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.Controller">
+   <center>
+      <TabPane prefHeight="460.0" prefWidth="690.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+         <tabs>
+            <Tab fx:id="tabProject" text="MyProject" />
+            <Tab fx:id="tabLibrary" text="Library" />
+         </tabs>
+      </TabPane>
+   </center>
+   <top>
+      <AnchorPane prefHeight="45.0" prefWidth="690.0" style="-fx-background-color: #3498DB;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" layoutY="1.0" prefHeight="46.0" prefWidth="327.0">
+               <children>
+                  <ImageView fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/thor_avatar.png" />
+                     </image>
+                  </ImageView>
+                  <Label prefHeight="28.0" prefWidth="190.0" text="Package Manger">
+                     <font>
+                        <Font name="Berlin Sans FB Bold" size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </children></AnchorPane>
+   </top>
+   <bottom>
+      <AnchorPane prefHeight="26.0" prefWidth="794.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="646.0" layoutY="3.0" prefHeight="18.0" prefWidth="147.0" text="\@Le Tan Dat - 20215339" />
+         </children>
+      </AnchorPane>
+   </bottom>
+</BorderPane>

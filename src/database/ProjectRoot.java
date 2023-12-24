@@ -8,8 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,20 +25,33 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javafx.scene.control.TreeItem;
 import model.Library;
-import model.MavenProject;
 
-public class MavenProjectRoot extends DatabaseConnection {
-	String dir = "D:\\Hust_project1_PackageManager";
-	String mavenProject = "mavenProject";
+public class ProjectRoot{
+	String dir = "D:\\Hust_project1_PackageManager\\";
+	String mavenProject = "MavenProjectRoot";
+	String type;
+	
+	public ProjectRoot(String type) {
+		this.type = type;
+	}
+	
+	public static ProjectRoot getInstance(String type) {
+		return new ProjectRoot(type);
+	}
 	
 	public void create() {
+		if( type == "maven") {
+			System.out.println("Tạo MavenRoot");
+			createMaven();
+		}
+	}
+	
+	// Tạo MavenProjectRoot
+	private void createMaven() { 
     	// Tạo thu muc chua maven project
     	File thumuc = new File(dir);
-    	if( !thumuc.exists()) {
-    		thumuc.mkdir();
-    	}
+    	thumuc.mkdirs();
     	// Tạo maven project
     	String[] command = {
     			"mvn.cmd", "archetype:generate", 
@@ -61,6 +72,37 @@ public class MavenProjectRoot extends DatabaseConnection {
 		}
     }
     
+    public void saveDependencyTree(String projectPath) {
+    	replaceDependencyInPom(projectPath);
+    	String[] command = {"mvn.cmd", "dependency:tree"};
+    	
+    	ProcessBuilder processBuilder = new ProcessBuilder(command)
+    			.directory(new File(dir + mavenProject));
+    	
+        try {
+			Process process = processBuilder.start();
+			try (InputStream inputStream = process.getInputStream();
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader reader = new BufferedReader(inputStreamReader);
+                BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "DependencyTree.txt"))) {
+
+               String line;
+               while ((line = reader.readLine()) != null) {
+                   // Ghi vào tệp
+                   writer.write(line);
+                   writer.newLine();
+               }
+            }
+			// Chờ lệnh kết thúc
+            int exitCode = process.waitFor();
+            
+//            saveDependency(projectPath); 
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     private Document readXmlFile(String filePath) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -76,10 +118,11 @@ public class MavenProjectRoot extends DatabaseConnection {
         transformer.transform(source, result);
     }
     
-    public void replaceDependency(String projectPath) {
-    	String filePath = projectPath + "\\pom.xml";
+    // Thế dependencies của project với MavenProjectRoot để đọc lấy dependencyTree.txt
+    private void replaceDependencyInPom(String projectPath) {
+    	String filePath = projectPath + "pom.xml";
     	try {
-    		Document oldDocument = readXmlFile(dir + "\\" + mavenProject + "\\pom.xml");
+    		Document oldDocument = readXmlFile(dir + mavenProject + "\\pom.xml");
     		
 			NodeList oldDependencyList = oldDocument.getElementsByTagName("dependencies");
 			NodeList newDependencyList = readXmlFile(filePath).getElementsByTagName("dependencies");
@@ -99,7 +142,7 @@ public class MavenProjectRoot extends DatabaseConnection {
             
             // Lưu lại file pom.xml mới
             try {
-				writeXmlFile(oldDocument, dir + "\\" + mavenProject + "\\pom.xml");
+				writeXmlFile(oldDocument, dir + mavenProject + "\\pom.xml");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -110,40 +153,7 @@ public class MavenProjectRoot extends DatabaseConnection {
 		}
     }
 
-    public void dependencyTree(String projectPath) {
-    	replaceDependency(projectPath);
-    	String[] command = {"mvn.cmd", "dependency:tree"};
-    	
-    	ProcessBuilder processBuilder = new ProcessBuilder(command)
-    			.directory(new File(dir + "\\" + mavenProject));
-    	
-        try {
-			Process process = processBuilder.start();
-			try (InputStream inputStream = process.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader reader = new BufferedReader(inputStreamReader);
-                BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "\\dependencyTree.txt"))) {
-
-               String line;
-               while ((line = reader.readLine()) != null) {
-                   // Ghi vào tệp
-                   writer.write(line);
-                   writer.newLine();
-               }
-            }
-			// Chờ lệnh kết thúc
-            int exitCode = process.waitFor();
-            System.out.println("\nExited with error code : " + exitCode);
-            System.out.println("Ghi thành công dependency tree");
-            
-            saveDependency(projectPath);
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-    private void saveDependency(String projectPath) throws FileNotFoundException {
+    private void saveLibrary(String projectPath) throws FileNotFoundException {
     	File file = new File(projectPath + "\\dependencyTree.txt");
     	int deep = 1;
 		Scanner myReader;
@@ -161,11 +171,10 @@ public class MavenProjectRoot extends DatabaseConnection {
 		    			String packageName = matcher.group(1);
 		    			String[] info = matcher.group(1).split(":");
 		    			
-		    			String groupId = info[0];
-		    			String artifactId = info[1];
+		    			String name = info[0] + ":" + info[1];
 		    			String version = info[info.length - 2];
-		    			Library library = new Library(groupId, artifactId, version);
-		    			library.save();
+//		    			Library library = new Library("Maven", name, version);
+//		    			library.save();
 		    			
 		    			deep += 1;
 		    			break;

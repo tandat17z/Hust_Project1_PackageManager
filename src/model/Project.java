@@ -1,113 +1,154 @@
 package model;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import database.MavenProjectRoot;
+import database.Database;
 
-public class Project extends MavenProjectRoot {
-	String projectDir ;
+public class Project{
+	String projectDir = "D:\\Hust_project1_PackageManager\\" + "Project\\";
 	
 	String name;
-	String version;
 	String type;
-	String time;
 	String description;
+	String time;
 	
+//	public static void main(String[] args) {
+//		Project project = new Project(
+//				"FirstProject",
+//				"maven",
+//				"first project",
+//				"2023:12:24 12:12:12"
+//			);
+//		project.save();
+//	}
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return type + ":" + name;
+	}
+	
+	public Project(String name, String type, String description, String time) {
+		this.name = name;
+		this.type = type;
+		this.time = time;
+		this.description = description;
+		
+		this.projectDir += name + "\\";
+	}
+	
+	// Tìm kiếm Project từ name
+	public Project(String projectName) {
+		// TODO Auto-generated constructor stub
+		String sql = "select * from PROJECT "
+				+ "where name = ?";
+		String [] arg = {projectName};
+		
+		Connection connection = Database.getInstance().getConnection();
+		PreparedStatement statement;
+		try {
+			statement = connection.prepareStatement(sql);
+			int i = 1;
+			for( String a: arg) {
+				statement.setString(i, a);
+				i++;
+			}
+			ResultSet resultSet = statement.executeQuery();
+			if( resultSet.next()) {
+				this.name = projectName;
+				this.type = resultSet.getString("type");
+				this.description = resultSet.getString("description");
+				this.time = resultSet.getString("time");
+			}
+			else {
+				System.out.println("Không tìm thầy project model trong db");
+			}
+			resultSet.close();
+			statement.close();
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.projectDir += name + "\\";
+	}
+
+	public Boolean exists() {
+		if( existsInDb() || existsInLocal() ) return true;
+		
+		return false;
+	}
+	
+	private Boolean existsInDb() {
+		String sqlChk = "SELECT * FROM PROJECT "
+				+ "WHERE name = ?";
+		String[] argChk = {name};
+		
+		try {
+			return Database.getInstance().sqlQuery(sqlChk, argChk);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	private Boolean existsInLocal() {
+		File dir = new File(projectDir);
+		if( dir.exists() ) return true;
+		return false;
+	}
+	
+	public void save() {
+		saveDb();
+		saveLocal();
+		System.out.println("Successful - Project.save: " + toString());
+	}
+	
+	private void saveDb() {
+		if( existsInDb() ) return;
+		try {
+			String sql = "INSERT INTO PROJECT(name, type, description, time) "
+					+ "VALUES (?, ?, ?, ?);";
+			String[] arg = {name, type, description, time};
+			Database.getInstance().sqlModify(sql, arg);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error: Project.saveDb");
+			e.printStackTrace();
+		}
+	}
+	
+	private void saveLocal() {
+		if( existsInLocal()) return;
+		
+		File dir = new File(projectDir);
+		dir.mkdirs();
+	}
+
 	public String getName() {
+		// TODO Auto-generated method stub
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
 	public String getType() {
+		// TODO Auto-generated method stub
 		return type;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getTime() {
-		return time;
-	}
-
-	public void setTime(String time) {
-		this.time = time;
-	}
-
 	public String getDescription() {
+		// TODO Auto-generated method stub
 		return description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Project(String name, String version, String type, String description, String time) {
-		super();
-		this.name = name;
-		this.version = version;
-		this.type = type;
-		this.time = time;
-		this.description = description;
-		
-		this.projectDir = "D:\\Hust_project1_PackageManager\\Project" 
-				+ "\\" + name + "\\" + version;
+	public String getTime() {
+		// TODO Auto-generated method stub
+		return time;
 	}
 	
-	public void saveDb() {
-		String sql = "INSERT INTO PROJECT(name, version, type, description, time) "
-				+ "VALUES (?, ?, ?, ?, ?);";
-		String[] arg = {name, version, type, description, time};
-		try {
-			sqlModify(sql, arg);
-			System.out.println("Lưu thành công Project trong db");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Lưu Project trong db FAIL --------");
-			e.printStackTrace();
-		}
-		
-	}
-	
-	public void saveLocal(File configFile) {
-		// Tạo thư mục mới
-		File dir = new File(projectDir);
-		boolean check = dir.mkdirs();
-		if( !check ) 
-			System.out.println("Không tạo thành công thư mục lưu trữ new project");
-		
-		//Sao chép config file vào thư mục lưu trữ
-    	try {
-			Files.copy(
-					configFile.toPath(), 
-					new File(projectDir, "pom.xml").toPath(),
-					StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	// Tạo file txt lưu dependency tree
-    	dependencyTree(projectDir);
-    	System.out.println("Lưu thành công ở Local");
-	}
-	
-	public void saveLibrary() {
-		
-	}
 }

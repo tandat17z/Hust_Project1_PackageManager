@@ -8,6 +8,7 @@ module Hust_Project1_PackageManager {
 	requires org.apache.httpcomponents.httpcore;
 	requires java.xml;
 	
-	opens view to javafx.graphics, javafx.fxml;
-	opens controller to javafx.graphics, javafx.fxml;
+	opens view;
+	opens controller;
+	opens model;
 }

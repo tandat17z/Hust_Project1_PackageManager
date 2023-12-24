@@ -12,27 +12,26 @@ import java.util.regex.Pattern;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import model.MavenProject;
-import model.Project;
+import model.Version;
 
 public class DpdcTreeController implements Initializable {
-	Project project;
-	String name;
+	Version verModel;
+	String projectName;
 	String version;
 	
-	public void setProject(Project project) {
-		this.project = project;
-		this.name = project.getName();
-		this.version = project.getVersion();
+	public void setVerModel(Version verModel) {
+		this.verModel = verModel;
+		this.projectName = verModel.getProject().getName();
+		this.version = verModel.getVersion();
 		
-		printTree();
+		showDependencyTree();
 	}
+	
     @FXML
     private Label lblName;
 
@@ -46,33 +45,36 @@ public class DpdcTreeController implements Initializable {
     void selectTree(MouseEvent event) {
 
     }
+    
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		// Sự kiện theo dõi khi một TreeItem được chọn
+		// Ấn Enter để tới library trong tree
         tvDependencyTree.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                // Khi một TreeItem được chọn, thêm sự kiện xử lý phím Enter
                 tvDependencyTree.setOnKeyPressed(event -> {
                     if (event.getCode() == KeyCode.ENTER) {
-                        // Thực hiện các hành động cần thiết với TreeItem đã được chọn
                         System.out.println("Enter key pressed on: " + newValue.getValue());
+                        
+                        
+                        
+                        
                     }
                 });
             }
         });
 	}
 	
-	void printTree() {
-		System.out.println("initTree");
-		lblName.setText(name);
+	
+	void showDependencyTree() {
+		lblName.setText(projectName);
 		lblVersion.setText(version);
 		// TODO Auto-generated method stub
-		File file = new File(MavenProject.projectDir + "\\" + name + "\\" + version + "\\dependencyTree.txt");
+		File file = new File(verModel.getVersionDir() + "DependencyTree.txt");
 		int deep = 1;
 		
-		TreeItem<String> root = new TreeItem<>(name + ":" + version);
+		TreeItem<String> root = new TreeItem<>(projectName + ":" + version);
 		
-		List<TreeItem<String>> pa  = new ArrayList(); //List parent cho các mức
+		List<TreeItem<String>> pa  = new ArrayList<TreeItem<String>>(); //List parent cho các mức
 		pa.add(root);
 		
 		Scanner myReader;
@@ -105,7 +107,7 @@ public class DpdcTreeController implements Initializable {
 		    	}
 			    if (deep == 0) break;
 			    
-				if(data.equals("[INFO] com.packagemanager:mavenProject:jar:1.0-SNAPSHOT"))
+				if(data.equals("[INFO] com.packagemanager:MavenProjectRoot:jar:1.0-SNAPSHOT"))
 			    	check = true;
 			}
 			myReader.close();

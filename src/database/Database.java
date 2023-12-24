@@ -6,16 +6,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DatabaseConnection {
-	public static DatabaseConnection getInstance() {
-		return new DatabaseConnection();
+public class Database {
+	public static Database getInstance() {
+		return new Database();
 	}
 	
 	public Connection getConnection(){
         Connection conn=null;
         try {
 			Class.forName("org.sqlite.JDBC");
-			String url="jdbc:sqlite:src\\database\\DatabasePM.db";
+			String url="jdbc:sqlite:src\\database\\DatabasePM0.db";
 			conn= DriverManager.getConnection(url);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -25,9 +25,10 @@ public class DatabaseConnection {
         return conn;
     }
 	
-	public void sqlModify(String sql, String[] arg) throws SQLException {
+	public void sqlModify(String sql, String[] arg) throws SQLException{
 		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement(sql);
+		PreparedStatement statement;
+		statement = connection.prepareStatement(sql);
 		int i = 1;
 		for( String a: arg) {
 			statement.setString(i, a);
@@ -38,7 +39,7 @@ public class DatabaseConnection {
 		connection.close();
 	}
 	
-	public ResultSet sqlQuery(String sql, String[] arg) throws SQLException {
+	public Boolean sqlQuery(String sql, String[] arg) throws SQLException {
 		Connection connection = getConnection();
 		PreparedStatement statement = connection.prepareStatement(sql);
 		int i = 1;
@@ -47,11 +48,13 @@ public class DatabaseConnection {
 			i++;
 		}
 		ResultSet resultSet = statement.executeQuery();
+		Boolean check = false;
+		if( resultSet.next()) check = true;
 //		while(resultSet.next()) {
 //			System.out.println(resultSet.getString("name"));
 //		}
 		statement.close();
 		connection.close();
-		return resultSet;
+		return check;
 	}
 }
