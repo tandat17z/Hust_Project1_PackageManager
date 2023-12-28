@@ -6,6 +6,8 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
@@ -18,41 +20,41 @@
          <center>
             <AnchorPane fx:id="apTree" prefHeight="475.0" prefWidth="800.0" BorderPane.alignment="CENTER">
                <children>
-                  <Label layoutX="6.0" layoutY="13.0" text="Project:">
+                  <Label layoutX="6.0" layoutY="12.0" text="Project:">
                      <font>
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <Label layoutX="10.0" layoutY="51.0" text="TỔNG QUAN">
+                  <Label layoutX="18.0" layoutY="41.0" text="TỔNG QUAN">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font></Label>
-                  <Label fx:id="lblProjectName" layoutX="73.0" layoutY="11.0">
+                  <Label fx:id="lblProjectName" layoutX="73.0" layoutY="10.0" prefHeight="30.0" prefWidth="166.0">
                      <font>
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
-                  <Label layoutX="369.0" layoutY="18.0" text="Type: " />
-                  <Label fx:id="lblType" layoutX="401.0" layoutY="17.0">
+                  <Label layoutX="369.0" layoutY="16.0" text="Type: " />
+                  <Label fx:id="lblType" layoutX="401.0" layoutY="15.0" prefHeight="20.0" prefWidth="52.0">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtDescription" layoutX="103.0" layoutY="94.0" prefHeight="71.0" prefWidth="302.0" />
+                  <TextArea fx:id="txtDescription" layoutX="103.0" layoutY="79.0" prefHeight="70.0" prefWidth="302.0" />
                   <Label layoutX="17.0" layoutY="278.0" text="VERSION">
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
                   </Label>
-                  <Button layoutX="405.0" layoutY="139.0" mnemonicParsing="false" onAction="#changeDescription" prefHeight="7.0" prefWidth="56.0" text="change" />
-                  <Label layoutX="14.0" layoutY="172.0" text="LỊCH SỬ CHỈNH SỬA">
+                  <Button layoutX="405.0" layoutY="123.0" mnemonicParsing="false" onAction="#updateDescription" prefHeight="26.0" prefWidth="56.0" text="change" />
+                  <Label layoutX="21.0" layoutY="150.0" prefHeight="19.0" prefWidth="137.0" text="Chỉnh sửa gần nhất:">
                      <font>
                         <Font name="System Bold" size="13.0" />
                      </font>
                   </Label>
-                  <Label layoutX="55.0" layoutY="69.0" text="Được tạo lúc:" />
-                  <Label layoutX="56.0" layoutY="94.0" text="Mô tả:" />
-                  <Label fx:id="lblTime" layoutX="130.0" layoutY="69.0" />
+                  <Label layoutX="55.0" layoutY="60.0" text="Được tạo lúc:" />
+                  <Label layoutX="56.0" layoutY="85.0" text="Mô tả:" />
+                  <Label fx:id="lblTime" layoutX="128.0" layoutY="59.0" prefHeight="18.0" prefWidth="174.0" />
                   <TableView fx:id="tvVersion" layoutX="6.0" layoutY="298.0" onMouseClicked="#showVersionDetail" prefHeight="201.0" prefWidth="470.0">
                     <columns>
                       <TableColumn fx:id="colVersion" maxWidth="130.0" prefWidth="130.0" sortType="DESCENDING" text="version" />
@@ -63,6 +65,21 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
+                  <TreeTableView fx:id="ttvRecentHis" layoutX="6.0" layoutY="173.0" prefHeight="105.0" prefWidth="470.0">
+                    <columns>
+                      <TreeTableColumn fx:id="colTimeHis" maxWidth="150.0" minWidth="100.0" prefWidth="125.0" text="Time" />
+                      <TreeTableColumn fx:id="colTypeHis" maxWidth="50.0" minWidth="30.0" prefWidth="40.0" text="Type" />
+                        <TreeTableColumn fx:id="colDetailHis" prefWidth="52.000030517578125" text="Detail" />
+                    </columns>
+                     <columnResizePolicy>
+                        <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </TreeTableView>
+                  <Button fx:id="btnVersion" layoutX="147.0" layoutY="148.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="67.0" text="Version">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </Button>
                </children>
             </AnchorPane>
          </center>
@@ -82,7 +99,7 @@
                   <Button fx:id="btnReload" layoutX="208.0" layoutY="72.0" mnemonicParsing="false" onAction="#reload" text="reload" />
                   <VBox fx:id="vboxRecent" layoutX="26.0" layoutY="99.0" prefHeight="114.0" prefWidth="266.0" />
                   <Label layoutX="17.0" layoutY="276.0" prefHeight="23.0" prefWidth="47.0" text="Kết quả: " />
-                  <Button layoutX="20.0" layoutY="197.0" mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0; -fx-border-radius: 0;" text="more ..." textAlignment="CENTER" textFill="#0069ff">
+                  <Button fx:id="btnMore" layoutX="20.0" layoutY="197.0" mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0; -fx-border-radius: 0;" text="more ..." textAlignment="CENTER" textFill="#0069ff">
                      <font>
                         <Font size="15.0" />
                      </font></Button>

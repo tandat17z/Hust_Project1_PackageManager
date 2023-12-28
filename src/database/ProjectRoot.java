@@ -25,12 +25,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import model.Library;
+
 
 public class ProjectRoot{
 	String dir = "D:\\Hust_project1_PackageManager\\";
 	String mavenProject = "MavenProjectRoot";
 	String type;
+	
+	public static void main(String[] args) {
+		ProjectRoot.getInstance("maven").saveDependencyTree("D:\\Hust_project1_PackageManager\\Project\\FirstProject\\1.0.0\\");
+	}
 	
 	public ProjectRoot(String type) {
 		this.type = type;
@@ -93,9 +97,12 @@ public class ProjectRoot{
                    writer.newLine();
                }
             }
+			
+// ---------- reader và writer chưa được đóng, có thể gây ra vấn đề 
+			
 			// Chờ lệnh kết thúc
             int exitCode = process.waitFor();
-            
+            System.out.println("ProjectRoot: Lưu DependencyText thành công");
 //            saveDependency(projectPath); 
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block

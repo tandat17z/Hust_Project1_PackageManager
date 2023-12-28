@@ -7,6 +7,10 @@ module Hust_Project1_PackageManager {
 	requires java.net.http;
 	requires org.apache.httpcomponents.httpcore;
 	requires java.xml;
+	requires java.desktop;
+//	requires org.json;
+//	requires jung.graph.impl;
+//	requires jung.api;
 	
 	opens view;
 	opens controller;

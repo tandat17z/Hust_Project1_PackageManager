@@ -9,15 +9,30 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import database.Database;
 import database.ProjectRoot;
+import javafx.scene.control.TreeItem;
 
 public class Version {
 	String versionDir;
+	
+	int versionId;
 	
 	Project project;
 	String version;
@@ -27,21 +42,20 @@ public class Version {
 	File configFile;
 	
 //	public static void main(String[] args) {
-//		Project project = new Project(
-//				"FirstProject",
-//				"maven",
-//				"first project",
-//				"2023:12:24 12:12:12"
-//			);
+////		Project project = new Project(
+////				"FirstProject",
+////				"maven",
+////				"first project",
+////				"2023:12:24 12:12:12"
+////			);
 //		Version version = new Version(
-//				project,
-//				"1.0.1",
-//				"first verion",
-//				"2023:12:24 12:12:12"
+//				"FirstProject",
+//				"1.0.0"
 //			);
-//		File configFile = new File("C:\\Users\\tandat17z\\eclipse-workspace\\Hust_Project1_PackageManager\\pom.xml");
-//		version.save(configFile);
+//		
+//		version.update("hello hello");
 //	}
+	
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
@@ -55,6 +69,7 @@ public class Version {
 		this.time = time;
 		
 		versionDir = project.projectDir + version + "\\";
+		this.configFile = new File(versionDir + "pom.xml");
 	}
 	
 	public Version(String projectName, String version) {
@@ -73,6 +88,7 @@ public class Version {
 			}
 			ResultSet resultSet = statement.executeQuery();
 			if( resultSet.next()) {
+				this.versionId = resultSet.getInt("version_id");
 				this.project = new Project(projectName);
 				this.version = version;
 				this.description = resultSet.getString("description");
@@ -90,15 +106,48 @@ public class Version {
 		}
 		
 		versionDir = project.projectDir + version + "\\";
+		this.configFile = new File(versionDir + "pom.xml");
 	}
 	
+	public Version(int version_id) {
+		String sql = "select * from VERSION "
+				+ "where version_id = ?";
+		
+		try {
+			Connection connection = Database.getInstance().getConnection();
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.setInt(1,  version_id);
+			ResultSet resultSet = statement.executeQuery();
+			
+			if( resultSet.next()) {
+				this.versionId = resultSet.getInt("version_id");
+				this.project = new Project(resultSet.getString("project"));
+				this.version = resultSet.getString("version");
+				this.description = resultSet.getString("description");
+				this.time = resultSet.getString("time");
+			}
+			else {
+				System.out.println("Không tìm thầy version model trong db");
+			}
+			resultSet.close();
+			statement.close();
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		versionDir = project.projectDir + version + "\\";
+		this.configFile = new File(versionDir + "pom.xml");
+	}
 	public void save(File configFile) {
 		this.configFile = configFile;
 		saveDb();
 		saveLocal();
+		versionId = (new Version(project.getName(), version)).getVersionId();
 		System.out.println("Successful - Version.save: " + toString());
 	}
-	
+
 	private void saveDb() {
 		String sqlChk = "SELECT * FROM VERSION "
 				+ "WHERE project = ? and version = ?";
@@ -194,7 +243,57 @@ public class Version {
 		}
 	}
 	
+	public List<Library> getDependency(){
+		List<Library> dependencyList = new ArrayList<Library>();
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document document = builder.parse(configFile);
+			
+			NodeList dependencies = document.getElementsByTagName("dependency");
+			
+			for (int i = 0; i < dependencies.getLength(); i++) {
+                if (dependencies.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element dependencyElement = (Element) dependencies.item(i);
+
+                    String groupId = dependencyElement.getElementsByTagName("groupId").item(0).getTextContent();
+                    String artifactId = dependencyElement.getElementsByTagName("artifactId").item(0).getTextContent();
+                    String version = dependencyElement.getElementsByTagName("version").item(0).getTextContent();
+                    
+                    dependencyList.add(new Library("maven", groupId + ":" + artifactId, version, "", "no"));
+//                    System.out.println("GroupID: " + groupId);
+//                    System.out.println("ArtifactID: " + artifactId);
+//                    System.out.println("Version: " + version);
+////                    System.out.println("Scope: " + scope);
+//                    System.out.println("------");
+                }
+            }
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return dependencyList;
+	}
 	
+	public void update(String newDescription) {
+		String sql = "UPDATE VERSION "
+				+ "SET description = ? "
+				+ "WHERE version_id = ?";
+		Connection connection = Database.getInstance().getConnection();
+		try {
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.setString(1, newDescription);
+			statement.setInt(2,  getVersionId());
+			statement.executeUpdate();
+			statement.close();
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public Project getProject() {
 		return project;
 	}
@@ -213,5 +312,9 @@ public class Version {
 	
 	public String  getDescription() {
 		return description;
+	}
+	public int getVersionId() {
+		// TODO Auto-generated method stub
+		return versionId;
 	}
 }

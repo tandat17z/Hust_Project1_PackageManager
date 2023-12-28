@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,14 +14,20 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import model.Library;
+import model.Version;
 
 public class LibraryController implements Initializable {
 	@FXML
@@ -125,4 +132,32 @@ public class LibraryController implements Initializable {
             filteredData.setPredicate(library -> library.getType().equals(type));
         }
 	}
+	
+	@FXML
+    void showLibraryInfo(MouseEvent event) {
+		if (event.getClickCount() == 2) {
+            // Lấy đối tượng từ hàng được chọn
+            Library library = tvLibrary.getSelectionModel().getSelectedItem();
+            if (library != null) {
+            	FXMLLoader loader = new FXMLLoader();
+				loader.setLocation(getClass().getResource("/view/LibraryInfo.fxml"));
+				
+				Parent root;
+				try {
+					root = loader.load();
+					Scene scene = new Scene(root);
+					LibraryInfoController controller = loader.getController();
+					controller.setLibrary(library.getType(), library.getName());
+					
+					Stage packageStage = new Stage();
+					packageStage.setTitle("Thông tin Library");
+					packageStage.setScene(scene);
+					packageStage.show();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+            }
+        }
+    }
 }

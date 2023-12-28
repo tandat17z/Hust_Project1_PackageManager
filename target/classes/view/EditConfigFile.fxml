@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="442.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EditConfigFileController">
+   <children>
+      <TextArea fx:id="txtCode" layoutX="17.0" layoutY="14.0" onKeyReleased="#checkReleased" prefHeight="378.0" prefWidth="566.0">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </TextArea>
+      <Button fx:id="btnSave" layoutX="318.0" layoutY="401.0" mnemonicParsing="false" onAction="#saveConfigFile" prefHeight="30.0" prefWidth="71.0" text="Save">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
+      <Button fx:id="btnCancel" layoutX="201.0" layoutY="401.0" mnemonicParsing="false" onAction="#cancel" prefHeight="30.0" prefWidth="71.0" text="Cancel">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>

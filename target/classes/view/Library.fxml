@@ -44,7 +44,7 @@
             </AnchorPane>
          </top>
          <center>
-            <TableView fx:id="tvLibrary" prefHeight="301.0" prefWidth="690.0" BorderPane.alignment="CENTER">
+            <TableView fx:id="tvLibrary" onMouseClicked="#showLibraryInfo" prefHeight="301.0" prefWidth="690.0" BorderPane.alignment="CENTER">
                <columns>
                   <TableColumn fx:id="colType" maxWidth="80.0" minWidth="80.0" text="Type" />
                   <TableColumn fx:id="colName" maxWidth="250.0" minWidth="250.0" prefWidth="250.0" text="Name" />

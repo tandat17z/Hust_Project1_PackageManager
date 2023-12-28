@@ -124,6 +124,25 @@ public class Project{
 		}
 	}
 	
+	public void update(String newDescription) {
+		String sql = "UPDATE PROJECT "
+				+ "SET description = ? "
+				+ "WHERE name = ?";
+		Connection connection = Database.getInstance().getConnection();
+		try {
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.setString(1, newDescription);
+			statement.setString(2,  getName());
+			statement.executeUpdate();
+			statement.close();
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	private void saveLocal() {
 		if( existsInLocal()) return;
 		

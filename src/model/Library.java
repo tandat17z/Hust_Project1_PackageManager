@@ -38,7 +38,7 @@ public class Library {
 	
 	@Override
 	public String toString() {
-		if( type == "maven") { 
+		if( type.equals("maven") ){ 
 			String[] str = name.split(":"); // groupId:artifactId
 			return str[0].replace('.', '\\') + "\\"
 					+ str[1] + "\\" + version + "\\" ;
@@ -168,6 +168,11 @@ public class Library {
 
 	public void setEdit(String edit) {
 		this.edit = edit;
+	}
+
+	public String getPomPath() {
+		// TODO Auto-generated method stub
+		return pomPath;
 	}
 
 	
