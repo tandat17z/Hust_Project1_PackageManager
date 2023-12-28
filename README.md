@@ -29,3 +29,6 @@
     - Lọc/ tìm kiếm
     - Hiển thị danh sách version
     - Xem chi tiết: (Mở thư mục chứa configfile, hiện dependency tree, command)
+Tính năng cần thêm:
+  -  Thêm mới version: (update từ version cũ)
+  -  
