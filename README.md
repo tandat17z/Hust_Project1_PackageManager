@@ -14,7 +14,7 @@
   Các tính năng đã hoàn thành:
   - Tạo new project -> add config file (Kiểm tra name đã tồn tại trong db vs local chưa):
     - Tạo version liên quan
-    - Tự động lưu các thư viện liên quan **(tất cả) (fix: Chỉ lưu các dependency thoi)**
+    - Tự động lưu các thư viện liên quan **(tất cả) (fix: Chỉ lưu các các thư viện phụ thuộc trực tiếp thoi)**
     
   - Homepage:
     - Hiển thị những version chỉnh sửa gần đây 
