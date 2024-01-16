@@ -8,9 +8,10 @@ module Hust_Project1_PackageManager {
 	requires org.apache.httpcomponents.httpcore;
 	requires java.xml;
 	requires java.desktop;
-//	requires org.json;
-//	requires jung.graph.impl;
-//	requires jung.api;
+	requires org.antlr.antlr4.runtime;
+	requires json.simple;
+	requires plexus.utils;
+	requires maven.model;
 	
 	opens view;
 	opens controller;

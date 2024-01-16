@@ -7,10 +7,14 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 
 public class Controller implements Initializable {
-
+	@FXML
+    private TabPane tabPane;
+	
     @FXML
     private Tab tabLibrary;
 
@@ -19,16 +23,41 @@ public class Controller implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		// TODO Auto-generated method stub
+		__NodeStatic.tabProject = tabProject;
+		__NodeStatic.tabPane = tabPane;
+		
 		try {
             // Load FXML file
             FXMLLoader loader0 = new FXMLLoader(getClass().getResource("/view/Project.fxml"));
-            tabProject.setContent(loader0.load());
+            Node node = loader0.load();
+            __NodeStatic.projectController2 = loader0.getController();
+            tabProject.setContent(node);
+            
             FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/view/Library.fxml"));
-            tabLibrary.setContent(loader1.load());
+            Node nodeLibrary = loader1.load();
+            __NodeStatic.libraryController = loader1.getController();
+            tabLibrary.setContent(nodeLibrary);
         } catch (IOException e) {
             e.printStackTrace();
         }
+		
+		// Khi click lại vào tab sẽ reload lại... update dữ liệu mới
+        tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
+            if (newTab != null) {
+            	System.out.println("click tab: " + newTab.getText());
+            	
+                if( newTab.getText().equals("MyProject")) {
+                	__NodeStatic.projectController2.reload();
+                	if( __NodeStatic.detailProjectController != null ) {
+                		__NodeStatic.detailProjectController.init();
+                	}
+                }
+                else if( newTab.getText().equals("Library")) {
+            		__NodeStatic.libraryController.reloadAll();
+            	}
+
+            }
+        });
 	}
 
     	

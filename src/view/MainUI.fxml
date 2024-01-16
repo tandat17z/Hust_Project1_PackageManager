@@ -12,10 +12,10 @@
 
 <BorderPane prefHeight="620.0" prefWidth="794.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.Controller">
    <center>
-      <TabPane prefHeight="460.0" prefWidth="690.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+      <TabPane fx:id="tabPane" prefHeight="460.0" prefWidth="690.0" BorderPane.alignment="CENTER">
          <tabs>
-            <Tab fx:id="tabProject" text="MyProject" />
-            <Tab fx:id="tabLibrary" text="Library" />
+            <Tab fx:id="tabProject" closable="false" text="MyProject" />
+            <Tab fx:id="tabLibrary" closable="false" text="Library" />
          </tabs>
       </TabPane>
    </center>
@@ -29,7 +29,7 @@
                         <Image url="@../images/thor_avatar.png" />
                      </image>
                   </ImageView>
-                  <Label prefHeight="28.0" prefWidth="190.0" text="Package Manger">
+                  <Label prefHeight="28.0" prefWidth="190.0" text="Package Manager">
                      <font>
                         <Font name="Berlin Sans FB Bold" size="20.0" />
                      </font>

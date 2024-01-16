@@ -5,56 +5,80 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public class Database {
-	public static Database getInstance() {
-		return new Database();
-	}
+	static String dbFile = "DatabasePM0.db";
 	
-	public Connection getConnection(){
-        Connection conn=null;
+	static ResultSet resultSet = null;
+	static Connection conn = null;
+	static PreparedStatement statement = null; 
+	
+	private static void setConnection(){
         try {
 			Class.forName("org.sqlite.JDBC");
-			String url="jdbc:sqlite:src\\database\\DatabasePM0.db";
-			conn= DriverManager.getConnection(url);
+			String url="jdbc:sqlite:src\\database\\" + dbFile;
+			conn = DriverManager.getConnection(url);
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			System.out.println("connection = Null");
+			System.out.println("Không kết nối được với Database");
 			e.printStackTrace();
 		}
-        return conn;
     }
 	
-	public void sqlModify(String sql, String[] arg) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement;
-		statement = connection.prepareStatement(sql);
+	private static void reset() throws SQLException {
+		if( resultSet != null ) resultSet.close();
+		if( statement != null) statement.close();
+		if( conn != null) conn.close();
+			
+		resultSet = null;
+		statement = null;
+		conn = null;
+	}
+	
+	public static void modify(String sql, List<Object> arg) throws SQLException{
+//		reset();
+		setConnection();
+		statement = conn.prepareStatement(sql);
 		int i = 1;
-		for( String a: arg) {
-			statement.setString(i, a);
+		for( Object item: arg) {
+			if (item instanceof Integer) {
+                // Xử lý kiểu int
+                int intValue = (int) item;
+                statement.setInt(i, intValue);
+            } else if (item instanceof String) {
+                // Xử lý kiểu String
+                String stringValue = (String) item;
+                statement.setString(i, stringValue);
+            }
 			i++;
 		}
 		statement.executeUpdate();
-		statement.close();
-		connection.close();
+		reset();
 	}
-	
-	public Boolean sqlQuery(String sql, String[] arg) throws SQLException {
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement(sql);
-		int i = 1;
-		for( String a: arg) {
-			statement.setString(i, a);
-			i++;
+
+	public static ResultSet query(String sql, List<Object> arg) throws SQLException {
+//		reset();
+		setConnection();
+		
+		statement = conn.prepareStatement(sql);
+		if(arg != null) {
+			int i = 1;
+			for( Object item: arg) {
+				if (item instanceof Integer) {
+					// Xử lý kiểu int
+					int intValue = (int) item;
+					statement.setInt(i, intValue);
+				} else if (item instanceof String) {
+					// Xử lý kiểu String
+					String stringValue = (String) item;
+					statement.setString(i, stringValue);
+				}
+				i++;
+			}
 		}
-		ResultSet resultSet = statement.executeQuery();
-		Boolean check = false;
-		if( resultSet.next()) check = true;
-//		while(resultSet.next()) {
-//			System.out.println(resultSet.getString("name"));
-//		}
-		statement.close();
-		connection.close();
-		return check;
+		resultSet = statement.executeQuery();
+		return resultSet;
 	}
 }

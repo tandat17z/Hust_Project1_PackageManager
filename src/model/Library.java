@@ -1,39 +1,33 @@
 package model;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 import database.Database;
-import database.ProjectRoot;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-public class Library {
-	String pomPath = "D:\\Hust_project1_PackageManager\\Library\\";
-	String repoMaven = "https://repo1.maven.org/maven2/"; // để truy cập repo chứa Pom của maven
+public class Library implements Comparable<Library> {
+	String libraryPath = "D:\\Hust_project1_PackageManager\\Library\\";
 	
 	String type;
 	String name;
 	String version;
 	String description;
 	String edit;
-	
+
+	@Override
+	public int compareTo(Library other) {
+		int result = this.description.compareTo(other.description);
+        return result;
+	}
+
 //	public static void main(String[] args) {
-//		Library library = new Library(
-//				"maven", 
-//				"org.openjfx:javafx-controls", 
-//				"21.0.1",
-//				"javafx",
-//				"no");
-//		System.out.println(library.pomPath);
-//		library.save();
+//		Library library = new Library("maven", "org.xerial:sqlite-jdbc", "3.44.1.0", "maven", "no");
+//		library.saveLocal();
 //	}
 	
 	@Override
@@ -43,93 +37,138 @@ public class Library {
 			return str[0].replace('.', '\\') + "\\"
 					+ str[1] + "\\" + version + "\\" ;
 		}
+		else if (type.equals("npm")){
+			return name + "\\" + version + "\\";
+		}
 		return " ";
 	}
 	
 	public Library(String type, String name, String version, String description, String edit) {
-		this.type = type;
+		if(type.equals("gradle"))this.type = "maven";
+		else this.type = type;
+		
 		this.name = name;
 		this.version = version;
 		this.description = description;
 		this.edit = edit;
 		
-		String[] str = name.split(":");
-		if( str.length >= 2) {
-			this.pomPath += type + "\\" + toString();
-			this.repoMaven += toString().replace("\\", "/") + str[1] + "-" + version+ ".pom";
-		}
-		
+		this.libraryPath += this.type + "\\" + toString();
 	}
 	
-	public void save() {
-		saveLocal();
-		saveDb();
-		System.out.println("Successful - Library.save: " + toString());
-	}
-
-	private void saveDb() {
-		String sqlChk = "SELECT * FROM LIBRARY "
-				+ "WHERE type = ? and name = ? and version = ?";
-		String[] argChk = {type, name, version};
+	public Library(String type, String name) {
+		if(type.equals("gradle")) this.type = "maven";
+		else this.type = type;
+		
+		this.name = name;
+		
+		String sql = "Select * from LIBRARY "
+				+ "where type= ? and name = ?;";
+		List<Object> arg = new ArrayList<>();
+		arg.add(this.type);
+		arg.add(this.name);
 		
 		try {
-			Boolean check = Database.getInstance().sqlQuery(sqlChk, argChk);
-			if( check ) {
-				System.out.println("--" + toString() + "existed in Db");
-				return;
+			ResultSet resultSet = Database.query(sql, arg);
+			if( resultSet.next()) {
+				this.version = resultSet.getString("version");
+				this.description = resultSet.getString("description");
+				this.edit = resultSet.getString("edit");
 			}
-			
-			String sql = "INSERT INTO LIBRARY(type, name, version, description, edit) "
-					+ "VALUES (?, ?, ?, ?, ?);";
-			String[] arg = {type, name, version, description, edit};
-			Database.getInstance().sqlModify(sql, arg);
+			else {
+				System.out.println("Không tìm thầy library model trong db");
+			}
+			resultSet.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Error: Library.saveDb");
 			e.printStackTrace();
 		}
-	}
-	
-	private void saveLocal() {
-		File dir = new File(pomPath);
-		if( dir.exists() ) {
-        	System.out.println( "--" + toString() + " existed trong Local");
-        	return;
-		}
 		
-		dir.mkdirs();
-		try {
-	        downloadPom();
-	        ProjectRoot.getInstance(type).saveDependencyTree(pomPath);
-		}
-		catch(Exception e) {
-			System.out.println("Error: Library don't get pom");
-		}
+		this.libraryPath += this.type + "\\" + toString();
 	}
 	
-	private void downloadPom() {
-		HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(repoMaven);
-
+	public Boolean exists() {
+		if( existsInDb() || existsInLocal() ) return true;
+		return false;
+	}
+	
+	private Boolean existsInDb() {
+		String sqlChk = "SELECT * FROM LIBRARY "
+				+ "WHERE type = ? and name = ? and version = ?";
+		List<Object> argChk = new ArrayList<>();
+		argChk.add(this.type);
+		argChk.add(this.name);
+		argChk.add(this.version);
+		
+		boolean check = false;
 		try {
-			HttpResponse response;
-			response = httpClient.execute(httpGet);
-			HttpEntity entity = response.getEntity();
-			if (entity != null) {
-				String pomContent =  EntityUtils.toString(entity);
-				
-				File file = new File(pomPath + "pom.xml");
-	            FileWriter writer = new FileWriter(file);
-	            writer.write(pomContent);
-	            writer.close();
-			}
-		} catch (IOException e) {
+			ResultSet resultSet = Database.query(sqlChk, argChk);
+			check = resultSet.next();
+			resultSet.close();
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return check;
+	}
+	
+	private Boolean existsInLocal() {
+		File dir = new File(libraryPath);
+		if( dir.exists() ) return true;
+		return false;
+	}
+	
+	public void save(boolean update) {
+		saveLocal();
+		try {
+			saveDb(update);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("ERROR: Library.saveInDb");
+		}
+	}
 
-    }
-
+	private void saveDb(boolean update) throws SQLException {
+		if( existsInDb() ) {
+			if( update ) {
+				String sql = "UPDATE LIBRARY "
+						+ "SET description = ?, edit = ? "
+						+ "WHERE type = ? and name = ? and version = ?;";
+				List<Object> arg = new ArrayList<>();
+				arg.add(this.description);
+				arg.add(this.edit);
+				arg.add(this.type);
+				arg.add(this.name);
+				arg.add(this.version);
+				Database.modify(sql, arg);
+			}
+		}
+		else {
+			String sql = "INSERT INTO LIBRARY(type, name, version, description, edit) "
+					+ "VALUES (?, ?, ?, ?, ?);";
+			List<Object> arg = new ArrayList<>();
+			arg.add(this.type);
+			arg.add(this.name);
+			arg.add(this.version);
+			arg.add(this.description);
+			arg.add(this.edit);
+			Database.modify(sql, arg);
+			System.out.println(toString() + " - Lưu thành công in Db");
+		}
+	}
+	
+	private void saveLocal() { // download file cấu hình và tạo file cây
+		if( existsInLocal()) {
+			System.out.println(toString() + "Đã lưu ");
+			return;
+		}
+		File dir = new File(libraryPath);
+		dir.mkdirs();
+		
+		Root.getInstance(type).downloadConfigFile(this);
+		Root.getInstance(type).saveDependencyTreeToTxt(libraryPath);
+		System.out.println("Library: Lưu local " + toString());
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -170,10 +209,64 @@ public class Library {
 		this.edit = edit;
 	}
 
-	public String getPomPath() {
+	public String getLibraryPath() {
 		// TODO Auto-generated method stub
-		return pomPath;
+		return libraryPath;
 	}
 
 	
+	
+	public static ObservableList<Library> getAll(){
+		ObservableList<Library> listLibrary = FXCollections.observableArrayList();
+		String sql = "Select DISTINCT TYPE, NAME from LIBRARY ";
+
+		try {
+			ResultSet resultSet = Database.query(sql, null);
+			while( resultSet.next()) {
+				String type = resultSet.getString("type");
+				String name = resultSet.getString("name");
+				
+				Library library = new Library(
+							type,
+							name
+						);
+				listLibrary.add(library);
+			}
+			
+			resultSet.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return listLibrary;
+	}
+
+	public List<Library> getVersionOfLibrary(){
+		List<Library> list = new ArrayList<>();
+		String sql = "Select * from LIBRARY "
+				+ "where type = ? and name = ? "
+				+ "order by version desc;";
+		List<Object> arg = new ArrayList<>();
+		arg.add(this.type);
+		arg.add(this.name);
+		
+		try {
+			ResultSet resultSet = Database.query(sql, arg);
+			while( resultSet.next()) {
+				Library lib= new Library(
+						resultSet.getString("type"),
+						resultSet.getString("name"),
+						resultSet.getString("version"),
+						resultSet.getString("description"),
+						resultSet.getString("edit")
+				);
+				list.add(lib);
+			}
+			resultSet.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+	}
 }

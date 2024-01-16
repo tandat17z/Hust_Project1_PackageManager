@@ -11,28 +11,28 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.VersionController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.DetailVersionController">
    <children>
       <BorderPane prefHeight="600.0" prefWidth="750.0">
          <top>
-            <AnchorPane prefHeight="71.0" prefWidth="750.0" BorderPane.alignment="CENTER">
+            <AnchorPane prefHeight="71.0" prefWidth="750.0" style="-fx-background-color: #1974d3;" BorderPane.alignment="CENTER">
                <children>
-                  <Label layoutX="55.0" layoutY="13.0" text="Project:">
+                  <Label layoutX="55.0" layoutY="13.0" text="Project:" textFill="WHITE">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </Label>
-                  <Label fx:id="lblName" layoutX="119.0" layoutY="9.0" text="Project.version">
+                  <Label fx:id="lblName" layoutX="119.0" layoutY="9.0" text="Project.version" textFill="WHITE">
                      <font>
-                        <Font size="18.0" />
+                        <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <Label fx:id="lblVersion" layoutX="119.0" layoutY="36.0" text="version">
+                  <Label fx:id="lblVersion" layoutX="119.0" layoutY="36.0" text="version" textFill="WHITE">
                      <font>
-                        <Font size="16.0" />
+                        <Font name="System Bold Italic" size="16.0" />
                      </font>
                   </Label>
-                  <Label layoutX="53.0" layoutY="39.0" text="Version:">
+                  <Label layoutX="53.0" layoutY="39.0" text="Version:" textFill="WHITE">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -43,11 +43,11 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TreeView fx:id="tvDependencyTree" layoutX="25.0" layoutY="28.0" onContextMenuRequested="#selectTree" onMouseClicked="#selectTree" prefHeight="185.0" prefWidth="450.0" />
-                  <Label layoutX="8.0" layoutY="5.0" text="Dependency tree" />
+                  <TreeView fx:id="tvDependencyTree" layoutX="29.0" layoutY="36.0" onContextMenuRequested="#selectTree" onMouseClicked="#selectTree" prefHeight="175.0" prefWidth="447.0" />
+                  <Label layoutX="14.0" layoutY="18.0" text="Dependency tree" />
                   <Label layoutX="14.0" layoutY="229.0" text="Lịch sử:" />
                   <Button fx:id="btnReload" layoutX="425.0" layoutY="1.0" mnemonicParsing="false" onAction="#reload" text="reload" />
-                  <TreeTableView fx:id="ttvHistory" layoutY="254.0" prefHeight="268.0" prefWidth="500.0">
+                  <TreeTableView fx:id="ttvHistory" layoutX="29.0" layoutY="247.0" prefHeight="270.0" prefWidth="447.0">
                     <columns>
                       <TreeTableColumn fx:id="colTime" maxWidth="150.0" minWidth="100.0" prefWidth="125.0" text="Time" />
                       <TreeTableColumn fx:id="colType" maxWidth="50.0" minWidth="30.0" prefWidth="40.0" text="Type" />
@@ -61,21 +61,24 @@
             </AnchorPane>
          </center>
          <left>
-            <AnchorPane prefHeight="461.0" prefWidth="250.0" BorderPane.alignment="CENTER">
+            <AnchorPane prefHeight="529.0" prefWidth="250.0" style="-fx-background-color: #ffcc98;" BorderPane.alignment="CENTER">
                <children>
                   <Label layoutX="17.0" layoutY="4.0" text="Mô tả:">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtDescription" layoutX="14.0" layoutY="24.0" prefHeight="150.0" prefWidth="225.0" />
-                  <Button fx:id="btnChange" layoutX="171.0" layoutY="180.0" mnemonicParsing="false" onAction="#updateDescription" prefHeight="26.0" prefWidth="64.0" text="Thay đổi" />
+                  <TextArea fx:id="txtDescription" layoutX="14.0" layoutY="24.0" prefHeight="119.0" prefWidth="226.0" />
+                  <Button fx:id="btnChange" layoutX="176.0" layoutY="143.0" mnemonicParsing="false" onAction="#updateDescription" prefHeight="26.0" prefWidth="64.0" text="Thay đổi" />
                   <Label layoutX="14.0" layoutY="254.0" text="Config File:">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </Label>
-                  <Button fx:id="btnUpdate" layoutX="93.0" layoutY="251.0" mnemonicParsing="false" onAction="#updateConfigFile" prefHeight="26.0" prefWidth="141.0" text="Chỉnh sửa" />
+                  <Button fx:id="btnUpdate" layoutX="93.0" layoutY="249.0" mnemonicParsing="false" onAction="#updateConfigFile" prefHeight="19.0" prefWidth="142.0" style="-fx-background-color: #000181;" text="Chỉnh sửa" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font></Button>
                   <Line endX="100.0" layoutX="125.0" layoutY="230.0" startX="-100.0" />
                </children>
             </AnchorPane>

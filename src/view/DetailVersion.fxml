@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="525.0" prefWidth="780.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.DetailVersionController">
+   <children>
+      <BorderPane prefHeight="525.0" prefWidth="780.0">
+         <center>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <TreeView fx:id="tvDependencyTree" layoutX="98.0" layoutY="45.0" onContextMenuRequested="#selectTree" onMouseClicked="#selectTree" prefHeight="186.0" prefWidth="403.0" />
+                  <Label layoutX="8.0" layoutY="45.0" style="-fx-background-color: #ff6fa5;" text="Dependency tree" />
+                  <Label layoutX="14.0" layoutY="235.0" style="-fx-background-color: #ff6fa5;" text="Lịch sử:" />
+                  <Button fx:id="btnReload" layoutX="486.0" layoutY="8.0" mnemonicParsing="false" onAction="#reload">
+                     <graphic>
+                        <FontAwesomeIconView glyphName="REFRESH" size="20" />
+                     </graphic></Button>
+                  <TreeTableView fx:id="ttvHistory" layoutX="27.0" layoutY="263.0" prefHeight="254.0" prefWidth="476.0">
+                    <columns>
+                      <TreeTableColumn fx:id="colTime" maxWidth="150.0" minWidth="100.0" prefWidth="125.0" text="Time" />
+                      <TreeTableColumn fx:id="colType" maxWidth="150.0" minWidth="30.0" text="Type" />
+                        <TreeTableColumn fx:id="colDetail" minWidth="100.0" prefWidth="250.0" text="Detail" />
+                    </columns>
+                     <columnResizePolicy>
+                        <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </TreeTableView>
+                  <Button layoutX="421.0" layoutY="9.0" mnemonicParsing="false" onAction="#showConfigFileDir" text="Local">
+                     <font>
+                        <Font name="System Bold Italic" size="12.0" />
+                     </font>
+                  </Button>
+               </children>
+            </AnchorPane>
+         </center>
+         <left>
+            <AnchorPane fx:id="paneBg" prefHeight="440.0" prefWidth="250.0" style="-fx-background-color: #ffcc98;" BorderPane.alignment="CENTER">
+               <children>
+                  <Label layoutX="14.0" layoutY="69.0" text="Mô tả:">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextArea fx:id="txtDescription" layoutX="12.0" layoutY="89.0" prefHeight="119.0" prefWidth="226.0" />
+                  <Button fx:id="btnChange" layoutX="174.0" layoutY="208.0" mnemonicParsing="false" onAction="#updateDescription" prefHeight="26.0" prefWidth="64.0" text="Thay đổi" />
+                  <Label layoutX="12.0" layoutY="263.0" text="Config File:">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="btnUpdate" layoutX="93.0" layoutY="258.0" mnemonicParsing="false" onAction="#updateConfigFile" prefHeight="19.0" prefWidth="142.0" style="-fx-background-color: #000181;" text="Chỉnh sửa" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font></Button>
+                  <GridPane prefHeight="54.0" prefWidth="250.0" style="-fx-background-color: #1974d3;">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="95.20001220703125" minWidth="10.0" prefWidth="64.79998779296875" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="181.6000244140625" minWidth="10.0" prefWidth="174.40001220703124" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label text="Project:" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets left="10.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Label fx:id="lblName" text="Project.version" textFill="WHITE" GridPane.columnIndex="1">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Label text="Version:" textFill="WHITE" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets left="10.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Label fx:id="lblVersion" text="version" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold Italic" size="16.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </GridPane>
+                  <Label layoutX="16.0" layoutY="330.0" text="Thống kê">
+                     <font>
+                        <Font name="System Bold Italic" size="14.0" />
+                     </font>
+                  </Label>
+                  <Line endX="100.0" layoutX="125.0" layoutY="320.0" startX="-100.0" />
+                  <GridPane layoutX="45.0" layoutY="350.0" prefHeight="119.0" prefWidth="182.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="155.99998779296874" minWidth="10.0" prefWidth="113.8000244140625" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="123.40001678466797" minWidth="10.0" prefWidth="24.199975585937494" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label style="-fx-background-color: #ff6fa5;" text="Số lượng Dependency:">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="10.0" layoutY="18.0" text="- Thêm:" GridPane.rowIndex="2">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="10.0" layoutY="49.0" text="- Xóa:" GridPane.rowIndex="3">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="10.0" layoutY="62.0" text="- Cập nhật:" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="dpdcNum" layoutX="10.0" layoutY="15.0" style="-fx-background-color: #ff6fa5;" text="10" GridPane.columnIndex="1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="addNum" layoutX="76.0" layoutY="15.0" text="10" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="updateNum" layoutX="10.0" layoutY="15.0" text="10" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="delNum" layoutX="76.0" layoutY="85.0" text="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="10.0" layoutY="64.0" text="So với bản gần nhất:" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </GridPane>
+               </children>
+            </AnchorPane>
+         </left>
+      </BorderPane>
+   </children>
+</AnchorPane>

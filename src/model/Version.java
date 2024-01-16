@@ -1,36 +1,21 @@
 package model;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import java.util.Map;
 
 import database.Database;
-import database.ProjectRoot;
-import javafx.scene.control.TreeItem;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Version {
-	String versionDir;
+	String versionPath = null;
 	
 	int versionId;
 	
@@ -38,87 +23,75 @@ public class Version {
 	String version;
 	String description;
 	String time;
-	
-	File configFile;
+	File configFile = null;
 	
 //	public static void main(String[] args) {
-////		Project project = new Project(
-////				"FirstProject",
-////				"maven",
-////				"first project",
-////				"2023:12:24 12:12:12"
-////			);
-//		Version version = new Version(
-//				"FirstProject",
-//				"1.0.0"
-//			);
-//		
-//		version.update("hello hello");
+//		Project project = new Project("Test");
+//		Version version = new Version(project, "1.1.1", "create new version", "2024-01-09 17:58:07");
+//		File file = new File("D:\\pom.xml");
+//		version.setConfigFile(file);
+//		version.save(false);
+//	
 //	}
+	
+	public void setConfigFile(File configFile) {
+		this.configFile = configFile;
+	}
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return project.toString() + ":" + version;
 	}
 	
 	public Version(Project project, String version, String description, String time) {
+		this.versionPath = project.projectPath + version + "\\";
+		
 		this.project = project;
 		this.version = version;
 		this.description = description;
 		this.time = time;
 		
-		versionDir = project.projectDir + version + "\\";
-		this.configFile = new File(versionDir + "pom.xml");
 	}
 	
-	public Version(String projectName, String version) {
+	
+	public Version(Project project, String version) {
+		this.project = project;
+		this.version = version;
+		
 		String sql = "select * from VERSION "
 				+ "where project = ? and version = ?";
-		String [] arg = {projectName, version};
-		
-		Connection connection = Database.getInstance().getConnection();
-		PreparedStatement statement;
+		List<Object> arg = new ArrayList<>();
+		arg.add(project.name);
+		arg.add(version);
+	
 		try {
-			statement = connection.prepareStatement(sql);
-			int i = 1;
-			for( String a: arg) {
-				statement.setString(i, a);
-				i++;
-			}
-			ResultSet resultSet = statement.executeQuery();
+			ResultSet resultSet = Database.query(sql, arg);
 			if( resultSet.next()) {
 				this.versionId = resultSet.getInt("version_id");
-				this.project = new Project(projectName);
-				this.version = version;
 				this.description = resultSet.getString("description");
 				this.time = resultSet.getString("time");
+				this.versionPath = project.projectPath + version + "\\";
 			}
 			else {
-				System.out.println("Không tìm thầy version model trong db");
+				System.out.println("ERROR: Không tìm thầy version model trong db");
 			}
 			resultSet.close();
-			statement.close();
-			connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		versionDir = project.projectDir + version + "\\";
-		this.configFile = new File(versionDir + "pom.xml");
 	}
 	
 	public Version(int version_id) {
 		String sql = "select * from VERSION "
 				+ "where version_id = ?";
 		
+		List<Object> arg = new ArrayList<>();
+		arg.add(this.versionId);
+		
 		try {
-			Connection connection = Database.getInstance().getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql);
-			statement.setInt(1,  version_id);
-			ResultSet resultSet = statement.executeQuery();
-			
+			ResultSet resultSet = Database.query(sql, arg);
 			if( resultSet.next()) {
 				this.versionId = resultSet.getInt("version_id");
 				this.project = new Project(resultSet.getString("project"));
@@ -130,176 +103,127 @@ public class Version {
 				System.out.println("Không tìm thầy version model trong db");
 			}
 			resultSet.close();
-			statement.close();
-			connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		versionDir = project.projectDir + version + "\\";
-		this.configFile = new File(versionDir + "pom.xml");
-	}
-	public void save(File configFile) {
-		this.configFile = configFile;
-		saveDb();
-		saveLocal();
-		versionId = (new Version(project.getName(), version)).getVersionId();
-		System.out.println("Successful - Version.save: " + toString());
-	}
+		versionPath = project.projectPath + version + "\\";
 
-	private void saveDb() {
+	}
+	
+	public Boolean exists() {
+		if( existsInDb() || existsInLocal() ) return true;
+		return false;
+	}
+	
+	private Boolean existsInDb() {
 		String sqlChk = "SELECT * FROM VERSION "
-				+ "WHERE project = ? and version = ?";
-		String[] argChk = {project.name, version};
+				+ "WHERE project = ? and version = ?;";
+		List<Object> argChk = new ArrayList<>();
+		argChk.add(this.project.name);
+		argChk.add(this.version);
+		
+		boolean check = false;
 		try {
-			Boolean check = Database.getInstance().sqlQuery(sqlChk, argChk);
-			if( check ) {
-				System.out.println("--" + toString() + "existed in Db");
-				return;
-			}
-			
-			String sql = "INSERT INTO VERSION(project, version, description, time) "
-					+ "VALUES (?, ?, ?, ?);";
-			String[] arg = {project.name, version, description, time};
-			Database.getInstance().sqlModify(sql, arg);
+			ResultSet resultSet = Database.query(sqlChk, argChk);
+			check = resultSet.next();
+			resultSet.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Error: Version.saveDb");
 			e.printStackTrace();
+		}
+		return check;
+	}
+	
+	private Boolean existsInLocal() {
+		if( versionPath == null ) return false;
+		
+		File dir = new File(versionPath);
+		if( dir.exists() ) return true;
+		return false;
+	}
+	
+	
+	// Lưu version --------------------------------
+	public void save(boolean update) {
+		try {
+			saveDb(update);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("ERROR: version.saveInDb");
+		}
+		
+		saveLocal();
+		
+		saveDependencyDepth1();
+		
+		System.out.println("Successful - Version.save: " + toString());
+	}
+	
+	private void saveDb(boolean update) throws SQLException {
+		if( existsInDb()) {
+			if(update) {
+				String sql = "UPDATE VERSION "
+						+ "SET description = ?, time = ? "
+						+ "WHERE project = ? and version = ?;";
+				List<Object> arg = new ArrayList<>();
+				arg.add(this.description);
+				arg.add(this.time);
+				arg.add(this.project.name);
+				arg.add(this.version);
+				Database.modify(sql, arg);
+			}
+		}
+		else {
+			String sql = "INSERT INTO VERSION(project, version, description, time) "
+					+ "VALUES (?, ?, ?, ?);";
+			List<Object> arg = new ArrayList<>();
+			arg.add(this.project.name);
+			arg.add(this.version);
+			arg.add(this.description);
+			arg.add(this.time);
+			Database.modify(sql, arg);
 		}
 	}
 	
 	private void saveLocal() {
-		File dir = new File(versionDir);
-		if( dir.exists() ) {
-        	System.out.println("--" +  toString() + " existed trong Local");
-        	return;
-		}
-		dir.mkdirs();
-		//Sao chép config file vào thư mục lưu trữ
-    	try {
-			Files.copy(
-					configFile.toPath(), 
-					new File(versionDir, "pom.xml").toPath(),
-					StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	// Tạo file txt lưu dependency tree
-    	ProjectRoot.getInstance(project.type).saveDependencyTree(versionDir);
-    	try {
-    		System.out.println("---- SAVE DEPENDENCY ----");
-			saveDependency();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Error: Version.saveDependency");
-			e.printStackTrace();
-		}
-	}
-	
-	private void saveDependency() throws FileNotFoundException {
-		File treeFile = new File(versionDir + "DependencyTree.txt");
-    	int deep = 1;
-		Scanner myReader;
-		try {
-			myReader = new Scanner(treeFile);
-			boolean check = false; // Bắt đầu tìm đến đoạn text chứa thông tin cây
-			while ( myReader.hasNextLine() ) { 
-				String data = myReader.nextLine();
-				if(check) {
-					while( deep != 0) {
-						String str = "\\[INFO\\] .{" + (deep*3 - 1) + "}\\s(.+)";
-						Pattern pattern = Pattern.compile(str);
-						Matcher matcher = pattern.matcher(data);
-						if( matcher.find()) {
-							String packageName = matcher.group(1);
-							String[] info = matcher.group(1).split(":");
-							
-							String name = info[0] + ":" + info[1];
-							String version = info[info.length - 2];
-							
-			    			Library library = new Library(project.type, name, version, "Maven Repository", "no");
-			    			library.save();
-							
-							deep += 1;
-							break;
-						}
-						deep -= 1;
-					}
-				}
-				if (deep == 0) break;
-				
-				if(data.equals("[INFO] com.packagemanager:MavenProjectRoot:jar:1.0-SNAPSHOT"))
-					check = true;
-				
-			}
-			myReader.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public List<Library> getDependency(){
-		List<Library> dependencyList = new ArrayList<Library>();
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-		try {
-			builder = factory.newDocumentBuilder();
-			Document document = builder.parse(configFile);
-			
-			NodeList dependencies = document.getElementsByTagName("dependency");
-			
-			for (int i = 0; i < dependencies.getLength(); i++) {
-                if (dependencies.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                    Element dependencyElement = (Element) dependencies.item(i);
-
-                    String groupId = dependencyElement.getElementsByTagName("groupId").item(0).getTextContent();
-                    String artifactId = dependencyElement.getElementsByTagName("artifactId").item(0).getTextContent();
-                    String version = dependencyElement.getElementsByTagName("version").item(0).getTextContent();
-                    
-                    dependencyList.add(new Library("maven", groupId + ":" + artifactId, version, "", "no"));
-//                    System.out.println("GroupID: " + groupId);
-//                    System.out.println("ArtifactID: " + artifactId);
-//                    System.out.println("Version: " + version);
-////                    System.out.println("Scope: " + scope);
-//                    System.out.println("------");
-                }
-            }
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return dependencyList;
-	}
-	
-	public void update(String newDescription) {
-		String sql = "UPDATE VERSION "
-				+ "SET description = ? "
-				+ "WHERE version_id = ?";
-		Connection connection = Database.getInstance().getConnection();
-		try {
-			PreparedStatement statement = connection.prepareStatement(sql);
-			statement.setString(1, newDescription);
-			statement.setInt(2,  getVersionId());
-			statement.executeUpdate();
-			statement.close();
-			connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		File dir = new File(versionPath);
+		if( !existsInLocal()) 
+			dir.mkdirs();
 		
+		//Sao chép config file vào thư mục lưu trữ
+		if( configFile != null) {
+			Root.getInstance(project.type).copyToLocal(configFile, versionPath);
+			Root.getInstance(project.type).saveDependencyTreeToTxt(versionPath);
+		}
 	}
+	
+	public List<Library> getDependencyDepth1(){
+		List<Library> list = new ArrayList<>();
+		Map<Library, Library> tree = Root.getInstance(this.project.type).getDependency(versionPath);
+		for(Library keyLib : tree.keySet()) {
+			if( tree.get(keyLib) == null ) {
+				list.add(keyLib);
+			}
+		}
+		return list;
+	}
+	public void saveDependencyDepth1() {
+		for(Library keyLib : getDependencyDepth1()) {
+			if(keyLib.type.equals("maven")) keyLib.setDescription("Maven Repository");
+			else if(keyLib.type.equals("npm")) keyLib.setDescription("Npm Repository");
+			keyLib.save(false);
+		}
+	}
+	
 	public Project getProject() {
 		return project;
 	}
 	
-	public String getVersionDir() {
-		return versionDir;
+	public String getVersionPath() {
+		return versionPath;
 	}
 	
 	public String getVersion() {
@@ -316,5 +240,153 @@ public class Version {
 	public int getVersionId() {
 		// TODO Auto-generated method stub
 		return versionId;
+	}
+	
+	
+	// Thêm 1 version mới --------------------
+	public static void addNewVerrsion(Project project, String version, String description, String time, File configFile) {
+		Version newVersion = new Version(project, version, description, time);
+		newVersion.setConfigFile(configFile);
+		newVersion.save(false);
+    	
+    	// Lưu thay đổi đầu tiên
+		newVersion = new Version(project, version);
+		
+    	Change change = new Change(newVersion.getVersionId(), time, "create version", "create version");
+    	change.saveDb();
+	}
+	
+//	public static ObservableList<Version> getVersionOfProject(Project project ){
+//		ObservableList<Version> listVersion = FXCollections.observableArrayList();
+//		String sql = "Select * from VERSION "
+//				+ "where project like ? "
+//				+ "order by time DESC ";
+//		List<Object> arg = new ArrayList<>();
+//		arg.add(project.name);
+//		
+//		try {
+//			ResultSet resultSet = Database.query(sql, arg);
+//			while( resultSet.next()) {
+//				String version = resultSet.getString("version");
+//				
+//				Version verModel = new Version(
+//							project,
+//							version
+//				);
+//				listVersion.add(verModel);
+//			}
+//			resultSet.close();
+//			
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return listVersion;
+//	}
+	public void setDescription(String text) {
+		// TODO Auto-generated method stub
+		this.description = text;
+	}
+	
+	public void saveChangeConfigFile(String changeTime, String content) throws IOException {
+		System.out.println("Bắt đầu lưu những thay đổi");
+		List<Library> oldDependencis = getDependencyDepth1();
+    	List<Library> newDependencis;
+    	
+    	this.configFile = new File(versionPath, Root.getInstance(project.type).getFileType());
+    	try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
+            writer.write(content);
+            writer.flush(); // Đảm bảo dữ liệu được ghi vào file ngay lập tức
+            writer.close(); // Đóng Writer để giải phóng tài nguyên
+            
+            String type = this.project.getType();
+            Root.getInstance(type).saveDependencyTreeToTxt(versionPath);
+            
+            saveDependencyDepth1(); // Lưu lại những gói mới
+            newDependencis = getDependencyDepth1();
+       
+            
+            // tìm những library được update or insert
+            for( Library library: newDependencis) {
+            	Boolean check = false;
+            	String newName = library.getName(), newVersion = library.getVersion();
+            	
+            	for(Library old: oldDependencis) {
+            		String oldName = old.getName(), oldVersion = old.getVersion();
+            		
+            		// check update
+            		if( newName.equals(oldName)) {
+            			check = true;
+            			if( !newVersion.equals(oldVersion)){
+	            			Change change = new Change(versionId, changeTime, "update", newName +":" + oldVersion + ">>" + newVersion);
+	            			change.saveDb();
+	            		}
+            			break;
+            		}
+            		
+            	}
+            	
+            	// check insert
+            	if( !check ) {
+            		Change change = new Change(versionId, changeTime, "insert", newName + ":" + newVersion);
+        			change.saveDb();
+            	}
+            }
+            
+            // check remove
+            for( Library old: oldDependencis) {
+            	Boolean check = false;
+            	for(Library library: newDependencis) {
+            		if(old.getName().equals(library.getName())) {
+            			check = true;
+            			break;
+            		}
+            	}
+            	if( !check ) {
+            		Change change = new Change(versionId, changeTime, "remove", old.getName() + ":" + old.getVersion());
+        			change.saveDb();
+            	}
+            }
+		}
+    	
+
+		// Cập nhật trường thời gian cho version
+		this.time = changeTime;
+		this.save(true);
+		
+		System.out.println("Cập nhật thời gian cho version");
+	}
+	
+	public int[] getRecentChange() {
+		String sql = "select * from CHANGE "
+				+ "where version_id = ?"
+				+ "order by time desc;";
+		List<Object> arg = new ArrayList<>();
+		arg.add(versionId);
+		
+		int [] num = {0, 0, 0};
+		
+		String time = null;
+		try {
+			ResultSet resultSet = Database.query(sql, arg);
+			
+			while( resultSet.next()) {
+				String t = resultSet.getString("time");
+				if( time == null || time.equals(t)) {
+					time = t;
+					String type = resultSet.getString("type");
+					if( type.equals("insert")) num[0] += 1;
+					else if( type.equals("remove")) num[1] += 1;
+					else if( type.equals("update")) num[2] += 1;
+				}
+			}
+				
+			resultSet.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return num;
+		
 	}
 }
